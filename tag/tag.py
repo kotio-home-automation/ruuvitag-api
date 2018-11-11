@@ -8,15 +8,15 @@ class Tag:
         self.data['humidity'] = tagData['humidity']
         self.data['temperature'] = tagData['temperature']
 
-def load_tag_configuration():
-    with open('tags.json') as tagConfigurationFile:
+def load_tag_configuration(fileName):
+    with open(fileName) as tagConfigurationFile:
         configuredTags = json.load(tagConfigurationFile)
     tagConfigurationFile.close()
     return configuredTags
 
-def format_tags_data(fullTagDatas):
+def format_tags_data(completeTagsData):
     tagData = []
-    for data in fullTagDatas:
+    for data in completeTagsData:
         tag = Tag(data)
         tagData.append(tag.__dict__)
     return json.dumps(tagData, ensure_ascii=False).encode('utf8')
