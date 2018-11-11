@@ -9,7 +9,7 @@ Requires:
 '''
 from bottle import get, response, run
 from ruuvitag_sensor.ruuvi_rx import RuuviTagReactive
-from tag import load_tag_configuration, format_tags_data
+from tag.tag import load_tag_configuration, format_tags_data
 
 allData = {}
 
@@ -19,7 +19,7 @@ def ruuvitag_data():
     return format_tags_data(allData.values())
 
 if __name__ == '__main__':
-    configuredTags = load_tag_configuration()
+    configuredTags = load_tag_configuration('tag/tags.json')
 
     def handle_new_data(data):
         global allData
