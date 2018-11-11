@@ -59,4 +59,8 @@ http://0.0.0.0:5000/ruuvitag
   }
 ]
 ```
+## Tests
 
+All tests are currently in single file `test_tag.py`.
+
+Tests can be run from command line with `python3 -m unittest test_tag.py -v`.
