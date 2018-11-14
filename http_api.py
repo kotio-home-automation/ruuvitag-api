@@ -7,13 +7,30 @@ Requires:
     bottle
     ruuvitag_sensor
 '''
-from bottle import get, response, run
+from bottle import get, response, request, run
 from ruuvitag_sensor.ruuvi_rx import RuuviTagReactive
 from tag.tag import load_tag_configuration, format_tags_data
+
+# borrowed from https://ongspxm.github.io/blog/2017/02/bottlepy-cors/
+def enable_cors(func):
+    def wrapper(*args, **kwargs):
+        response.set_header("Access-Control-Allow-Origin", "*")
+        response.set_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        response.set_header("Access-Control-Allow-Headers", "Origin, Content-Type")
+
+        # skip the function if it is not needed
+        if request.method == 'OPTIONS':
+            return
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
 
 allData = {}
 
 @get('/ruuvitag')
+@enable_cors
 def ruuvitag_data():
     response.content_type = 'application/json; charset=UTF-8'
     return format_tags_data(allData.values())
