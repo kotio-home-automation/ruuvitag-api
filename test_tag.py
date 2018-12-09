@@ -5,7 +5,7 @@ from tag.tag import load_tag_configuration, format_tags_data
 class TestTagConfigurationLoading(TestCase):
 
     def test_three_tags_are_defined(self):
-        fileName = 'tag/tags.json'
+        fileName = 'tags.json'
         tagsConfiguration = load_tag_configuration(fileName)
         self.assertEqual(len(tagsConfiguration), 3)
 
