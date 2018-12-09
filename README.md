@@ -18,7 +18,7 @@ The `ruuvitag_sensor` module has a bunch of it's own requirements that need to b
 ## Configuring application
 
 The application needs to be configured so that it knows what ruuvitag beacons it subscribes to i.e. reads data from.
-The configuration file is a JSON file and can be found at `tag/tags.json`, it contains a example configuration. The configuration consists of a
+A example configuration file is provided and can be found at `tags.json`, it contains a example and test configuration. The configuration consists of a
 MAC address of the beacon and a descriptive name that will work as a identifier, the name can be chosen freely and be what ever seems appropriate e,g, a room name.
 
 ### Example configuration
@@ -32,7 +32,7 @@ MAC address of the beacon and a descriptive name that will work as a identifier,
 
 ## Run application
 
-Once prequisites are met and dependencies installed the application can run as root `python http_api.py` or as sudo `sudo python http_api.py`. If you have
+Once prequisites are met and dependencies installed the application can run as root `python http_api.py my-tags.json` or as sudo `sudo python http_api.py my-tags.json`. If you have
 python 2 and 3 installed the command `python` probably needs to be replaced with command `python3`.
 
 The application needs to run root or sudo because `ruuvitag_sensor` uses Bluez and that requires root privileges.
