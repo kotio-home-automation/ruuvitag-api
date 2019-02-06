@@ -37,6 +37,12 @@ python 2 and 3 installed the command `python` probably needs to be replaced with
 
 The application needs to run root or sudo because `ruuvitag_sensor` uses Bluez and that requires root privileges.
 
+### Run application with pm2
+
+`pm2 start --interpreter=/usr/bin/python3 --name=ruuvitag-py-api http_api.py -- tags.json`
+
+Prepend the command with `sudo` if you're not logged in as _root_.
+
 ## Endpoint
 
 http://0.0.0.0:5000/ruuvitag
