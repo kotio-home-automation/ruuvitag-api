@@ -16,15 +16,15 @@ from tag.tag import load_tag_configuration, format_tags_data
 def enable_cors(func):
     def wrapper(*args, **kwargs):
         response.set_header("Access-Control-Allow-Origin", "*")
+        response.set_header("Content-Type", "application/json")
         response.set_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        response.set_header("Access-Control-Allow-Headers", "Origin, Content-Type")
+        response.set_header("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Content-Type")
 
         # skip the function if it is not needed
         if request.method == 'OPTIONS':
             return
 
         return func(*args, **kwargs)
-
     return wrapper
 
 
