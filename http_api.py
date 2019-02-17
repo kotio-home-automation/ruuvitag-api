@@ -7,9 +7,9 @@ Requires:
     bottle
     ruuvitag_sensor
 '''
-import sys
+import sys, sched, time, json
 from bottle import get, response, request, run
-from ruuvitag_sensor.ruuvi_rx import RuuviTagReactive
+from ruuvitag_sensor.ruuvitag import RuuviTag
 from tag.tag import load_tag_configuration, format_tags_data
 
 # borrowed from https://ongspxm.github.io/blog/2017/02/bottlepy-cors/
@@ -27,14 +27,26 @@ def enable_cors(func):
         return func(*args, **kwargs)
     return wrapper
 
+configuredTags = dict()
+allData = []
 
-allData = {}
+def read_data():
+    global allData
+    allData = []
+    for mac in configuredTags.keys():
+        sensor = RuuviTag(mac)
+        sensor.update()
+        tagData = dict()
+        tagData = sensor.state
+        tagData['name'] = configuredTags[mac]
+        allData.append(tagData)
 
 @get('/ruuvitag')
 @enable_cors
 def ruuvitag_data():
+    global allData
     response.content_type = 'application/json; charset=UTF-8'
-    return format_tags_data(allData.values())
+    return format_tags_data(allData)
 
 if __name__ == '__main__':
     if (len(sys.argv) > 2):
@@ -48,21 +60,13 @@ if __name__ == '__main__':
 
     configurationFile = sys.argv[1]
     configuredTags = load_tag_configuration(configurationFile)
-
-    def handle_new_data(data):
-        global allData
-        tagMacAddress = data[0]
-        tagData = data[1]
-        tagData['name'] = configuredTags[tagMacAddress]
-        allData[tagMacAddress] = tagData
-
-    ruuvi_rx = RuuviTagReactive(list(configuredTags.keys()))
-    data_stream = ruuvi_rx.get_subject()
-    data_stream.subscribe(handle_new_data)
+    schedule = sched.scheduler(time.time, time.sleep)
+    schedule.enter(0, 60, read_data)
+    schedule.run()
 
     try:
         run(host='0.0.0.0', port=5000, debug=True)
     except:
         pass
     finally:
-        ruuvi_rx.stop()
+        print('Exiting...')
