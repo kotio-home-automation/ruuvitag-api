@@ -7,7 +7,7 @@ Requires:
     bottle
     ruuvitag_sensor
 '''
-import sys, sched, time, json
+import sys, json
 from bottle import get, response, request, run
 from ruuvitag_sensor.ruuvitag import RuuviTag
 from tag.tag import load_tag_configuration, format_tags_data
@@ -28,25 +28,22 @@ def enable_cors(func):
     return wrapper
 
 configuredTags = dict()
-allData = []
 
 def read_data():
-    global allData
     allData = []
     for mac in configuredTags.keys():
         sensor = RuuviTag(mac)
         sensor.update()
-        tagData = dict()
         tagData = sensor.state
         tagData['name'] = configuredTags[mac]
         allData.append(tagData)
+    return allData
 
 @get('/ruuvitag')
 @enable_cors
 def ruuvitag_data():
-    global allData
     response.content_type = 'application/json; charset=UTF-8'
-    return format_tags_data(allData)
+    return format_tags_data(read_data())
 
 if __name__ == '__main__':
     if (len(sys.argv) > 2):
@@ -60,9 +57,6 @@ if __name__ == '__main__':
 
     configurationFile = sys.argv[1]
     configuredTags = load_tag_configuration(configurationFile)
-    schedule = sched.scheduler(time.time, time.sleep)
-    schedule.enter(0, 60, read_data)
-    schedule.run()
 
     try:
         run(host='0.0.0.0', port=5000, debug=True)
