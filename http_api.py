@@ -7,7 +7,7 @@ Requires:
     bottle
     ruuvitag_sensor
 '''
-import sys, json, time, threading
+import sys, json
 from bottle import get, response, request, run
 from ruuvitag_sensor.ruuvitag import RuuviTag
 from tag.tag import load_tag_configuration, format_tags_data
@@ -28,8 +28,6 @@ def enable_cors(func):
     return wrapper
 
 configuredTags = dict()
-cachedData = []
-nextRun = time.time()
 
 def read_data():
     allData = []
@@ -41,37 +39,24 @@ def read_data():
         allData.append(tagData)
     return allData
 
-def cache_data():
-    print('Refreshing cache')
-    global cachedData
-    global cacheTimer
-    global nextRun
-    cachePeriodSeconds = 30
-    cachedData.clear()
-    cachedData = read_data()
-    nextRun = nextRun + cachePeriodSeconds
-    intervalInSeconds = nextRun - time.time()
-    cacheTimer = threading.Timer(intervalInSeconds, cache_data)
-    cacheTimer.start()
-
-cacheTimer = threading.Timer(0, cache_data)
-
 @get('/ruuvitag')
 @enable_cors
 def ruuvitag_data():
     response.content_type = 'application/json; charset=UTF-8'
-    return format_tags_data(cachedData)
+    return format_tags_data(read_data())
 
 if __name__ == '__main__':
+    if (len(sys.argv) > 2):
+        print('Too many arguments!')
+        sys.exit(0)
+
     # First argument is this python file itself
     if (len(sys.argv) < 2):
         print('Program needs a tag configuration file as parameter, e.g.: python http_api.py tags.json')
         sys.exit(0)
 
-    global configuredTags
     configurationFile = sys.argv[1]
     configuredTags = load_tag_configuration(configurationFile)
-    cacheTimer.start()
 
     try:
         run(host='0.0.0.0', port=5000, debug=True)
@@ -79,5 +64,3 @@ if __name__ == '__main__':
         pass
     finally:
         print('Exiting...')
-        cacheTimer.cancel()
-
