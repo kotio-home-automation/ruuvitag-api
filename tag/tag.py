@@ -16,7 +16,8 @@ def load_tag_configuration(fileName):
 
 def format_tags_data(completeTagsData):
     tagData = []
-    for data in completeTagsData:
+    for data in completeTagsData.values():
         tag = Tag(data)
         tagData.append(tag.__dict__)
-    return json.dumps(tagData, ensure_ascii=False).encode('utf8')
+    sortedTagData = sorted(tagData, key=lambda tag: tag['name'])
+    return json.dumps(sortedTagData, ensure_ascii=False).encode('utf8')
