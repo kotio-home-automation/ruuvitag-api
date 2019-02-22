@@ -8,11 +8,8 @@ Requires:
     ruuvitag_sensor
 '''
 import sys, json
-from multiprocessing import Manager
-from concurrent.futures import ProcessPoolExecutor
 from bottle import get, response, request, run
 from ruuvitag_sensor.ruuvitag import RuuviTag
-from ruuvitag_sensor.ruuvi import RuuviTagSensor
 from tag.tag import load_tag_configuration, format_tags_data
 
 # borrowed from https://ongspxm.github.io/blog/2017/02/bottlepy-cors/
@@ -31,31 +28,22 @@ def enable_cors(func):
     return wrapper
 
 configuredTags = dict()
-m = Manager()
-q = m.Queue()
-allTagsData = {}
-timeoutSeconds = 5
 
-def get_data_background(macs, queue):
-    while True:
-        datas = RuuviTagSensor.get_data_for_sensors(macs, timeoutSeconds)
-        queue.put(datas)
-
-def update_data():
-    global allTagsData
-    while not q.empty():
-        allTagsData = q.get()
-    for key, value in configuredTags.items():
-        if key in allTagsData:
-            allTagsData[key]['name'] = value
-            allTagsData[key]['mac'] = key
+def read_data():
+    allData = []
+    for mac in configuredTags.keys():
+        sensor = RuuviTag(mac)
+        sensor.update()
+        tagData = sensor.state
+        tagData['name'] = configuredTags[mac]
+        allData.append(tagData)
+    return allData
 
 @get('/ruuvitag')
 @enable_cors
 def ruuvitag_data():
-    update_data()
     response.content_type = 'application/json; charset=UTF-8'
-    return format_tags_data(allTagsData)
+    return format_tags_data(read_data())
 
 if __name__ == '__main__':
     if (len(sys.argv) > 2):
@@ -71,10 +59,8 @@ if __name__ == '__main__':
     configuredTags = load_tag_configuration(configurationFile)
 
     try:
-        executor = ProcessPoolExecutor(1)
-        executor.submit(get_data_background, list(configuredTags.keys()), q)
         run(host='0.0.0.0', port=5000, debug=True)
     except:
-        sys.exit(1)
+        pass
     finally:
         print('Exiting...')
