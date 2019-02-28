@@ -19,4 +19,5 @@ def format_tags_data(completeTagsData):
     for data in completeTagsData:
         tag = Tag(data)
         tagData.append(tag.__dict__)
-    return json.dumps(tagData, ensure_ascii=False).encode('utf8')
+    sortedData = sorted(tagData, key=lambda tag: tag['name'])
+    return json.dumps(sortedData, ensure_ascii=False).encode('utf8')
