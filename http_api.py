@@ -34,12 +34,15 @@ nextRun = time.time()
 def read_data():
     global cachedData
     allData = []
-    for mac in configuredTags.keys():
-        sensor = RuuviTag(mac)
-        sensor.update()
-        tagData = sensor.state
-        tagData['name'] = configuredTags[mac]
-        allData.append(tagData)
+    try:
+        for mac in configuredTags.keys():
+            sensor = RuuviTag(mac)
+            sensor.update()
+            tagData = sensor.state
+            tagData['name'] = configuredTags[mac]
+            allData.append(tagData)
+    except:
+        sys.exit(1)
     cachedData.clear()
     return allData
 
@@ -77,7 +80,7 @@ if __name__ == '__main__':
     try:
         run(host='0.0.0.0', port=5000, debug=True)
     except:
-        pass
+        sys.exit(1)
     finally:
         print('Exiting...')
         cacheTimer.cancel()
